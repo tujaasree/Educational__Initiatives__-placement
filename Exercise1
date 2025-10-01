@@ -1,0 +1,177 @@
+import java.util.*;
+
+// Behavioral Pattern 1: Observer
+interface Subscriber {
+    void update(String news);
+}
+class NewsPublisher {
+    private List<Subscriber> subscribers = new ArrayList<>();
+    public void subscribe(Subscriber s) { subscribers.add(s); }
+    public void unsubscribe(Subscriber s) { subscribers.remove(s); }
+    public void notifySubscribers(String news) {
+        for (Subscriber s : subscribers) s.update(news);
+    }
+}
+class NewsReader implements Subscriber {
+    private String name;
+    public NewsReader(String name) { this.name = name; }
+    public void update(String news) {
+        System.out.println(name + " received news: " + news);
+    }
+}
+
+// Behavioral Pattern 2: Strategy
+interface PaymentStrategy {
+    void pay(int amount);
+}
+class CreditCardPayment implements PaymentStrategy {
+    public void pay(int amount) {
+        System.out.println("Paid " + amount + " using Credit Card.");
+    }
+}
+class PaypalPayment implements PaymentStrategy {
+    public void pay(int amount) {
+        System.out.println("Paid " + amount + " using Paypal.");
+    }
+}
+class ShoppingCart {
+    private PaymentStrategy paymentStrategy;
+    public ShoppingCart(PaymentStrategy paymentStrategy) {
+        this.paymentStrategy = paymentStrategy;
+    }
+    public void checkout(int amount) { paymentStrategy.pay(amount); }
+    public void setPaymentStrategy(PaymentStrategy paymentStrategy) {
+        this.paymentStrategy = paymentStrategy;
+    }
+}
+
+// Structural Pattern 1: Adapter
+interface USBTypeC {
+    void chargeTypeC();
+}
+interface MicroUSB {
+    void chargeMicroUSB();
+}
+class MicroUSBCharger implements MicroUSB {
+    public void chargeMicroUSB() {
+        System.out.println("Charging with Micro USB Charger");
+    }
+}
+class MicroUSBToTypeCAdapter implements USBTypeC {
+    private MicroUSB microUsb;
+    public MicroUSBToTypeCAdapter(MicroUSB microUsb) {
+        this.microUsb = microUsb;
+    }
+    public void chargeTypeC() {
+        microUsb.chargeMicroUSB();
+    }
+}
+
+// Structural Pattern 2: Decorator
+interface Coffee {
+    double cost();
+    String ingredients();
+}
+class SimpleCoffee implements Coffee {
+    public double cost() { return 5.0; }
+    public String ingredients() { return "Coffee"; }
+}
+class CoffeeDecorator implements Coffee {
+    protected Coffee decoratedCoffee;
+    public CoffeeDecorator(Coffee coffee) {
+        decoratedCoffee = coffee;
+    }
+    public double cost() { return decoratedCoffee.cost(); }
+    public String ingredients() { return decoratedCoffee.ingredients(); }
+}
+class MilkDecorator extends CoffeeDecorator {
+    public MilkDecorator(Coffee coffee) { super(coffee); }
+    public double cost() { return super.cost() + 1.5; }
+    public String ingredients() { return super.ingredients() + ", Milk"; }
+}
+class SugarDecorator extends CoffeeDecorator {
+    public SugarDecorator(Coffee coffee) { super(coffee); }
+    public double cost() { return super.cost() + 0.5; }
+    public String ingredients() { return super.ingredients() + ", Sugar"; }
+}
+
+// Creational Pattern 1: Singleton
+class PrinterSpooler {
+    private static PrinterSpooler instance;
+    private PrinterSpooler() {}
+    public static synchronized PrinterSpooler getInstance() {
+        if (instance == null) instance = new PrinterSpooler();
+        return instance;
+    }
+    public void print(String document) {
+        System.out.println("Printing: " + document);
+    }
+}
+
+// Creational Pattern 2: Factory Method
+interface Shape {
+    void draw();
+}
+class Circle implements Shape {
+    public void draw() { System.out.println("Drawing Circle"); }
+}
+class Rectangle implements Shape {
+    public void draw() { System.out.println("Drawing Rectangle"); }
+}
+abstract class ShapeFactory {
+    abstract Shape createShape();
+    public void drawShape() {
+        Shape shape = createShape();
+        shape.draw();
+    }
+}
+class CircleFactory extends ShapeFactory {
+    public Shape createShape() { return new Circle(); }
+}
+class RectangleFactory extends ShapeFactory {
+    public Shape createShape() { return new Rectangle(); }
+}
+
+public class Exercise1Example {
+    public static void main(String[] args) {
+        System.out.println("Behavioral Pattern 1: Observer");
+        NewsPublisher publisher = new NewsPublisher();
+        Subscriber alice = new NewsReader("Alice");
+        Subscriber bob = new NewsReader("Bob");
+        publisher.subscribe(alice);
+        publisher.subscribe(bob);
+        publisher.notifySubscribers("New Java version released!");
+
+        System.out.println("\nBehavioral Pattern 2: Strategy");
+        ShoppingCart cart = new ShoppingCart(new CreditCardPayment());
+        cart.checkout(100);
+        cart.setPaymentStrategy(new PaypalPayment());
+        cart.checkout(200);
+
+        System.out.println("\nStructural Pattern 1: Adapter");
+        MicroUSB microUSBCharger = new MicroUSBCharger();
+        USBTypeC adapter = new MicroUSBToTypeCAdapter(microUSBCharger);
+        adapter.chargeTypeC();
+
+        System.out.println("\nStructural Pattern 2: Decorator");
+        Coffee coffee = new SimpleCoffee();
+        System.out.println("Cost: " + coffee.cost() + "; Ingredients: " + coffee.ingredients());
+
+        Coffee milkCoffee = new MilkDecorator(coffee);
+        System.out.println("Cost: " + milkCoffee.cost() + "; Ingredients: " + milkCoffee.ingredients());
+
+        Coffee fancyCoffee = new SugarDecorator(milkCoffee);
+        System.out.println("Cost: " + fancyCoffee.cost() + "; Ingredients: " + fancyCoffee.ingredients());
+
+        System.out.println("\nCreational Pattern 1: Singleton");
+        PrinterSpooler spooler = PrinterSpooler.getInstance();
+        spooler.print("Report.pdf");
+
+        System.out.println("\nCreational Pattern 2: Factory Method");
+        ShapeFactory factory1 = new CircleFactory();
+        factory1.drawShape();
+
+        ShapeFactory factory2 = new RectangleFactory();
+        factory2.drawShape();
+    }
+}
